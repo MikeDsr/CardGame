@@ -7,7 +7,9 @@
   "compatibility_date": "2026-01-01",
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // 关键：让 Worker 先处理请求（否则 WebSocket 升级会被静态资源路由抢先返回 index.html）
+    "run_worker_first": true
   },
   "durable_objects": {
     "bindings": [
