@@ -1,0 +1,12 @@
+{
+  "name": "juhui-katong",
+  "version": "1.0.0",
+  "description": "聚会卡堂 —— 中文合家欢桌游合集（狼人杀/三国杀/UNO/斗地主/大富翁）",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

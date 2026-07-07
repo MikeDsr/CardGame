@@ -1,0 +1,20 @@
+// Cloudflare Workers 免费部署配置
+// 用法：npx wrangler login  →  npx wrangler deploy
+// 部署后得到 https://juhui-katong.<你的子域>.workers.dev，静态页面与联机服务器同域，开箱即玩
+{
+  "name": "juhui-katong",
+  "main": "worker.js",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOMS", "class_name": "RoomHub" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["RoomHub"] }
+  ]
+}
