@@ -1,9 +1,14 @@
 // 网络层：在线房间（WebSocket 中继）
 // 单机模式不需要本文件——主程序直接在本地跑引擎 + AI。
 
+// 免费联机后端（Cloudflare Workers），供静态托管页面（GitHub Pages 等）默认使用
+const CF_BACKEND = 'wss://juhui-katong.158486706.workers.dev';
+
 export function defaultServerUrl() {
   const saved = localStorage.getItem('jk_server');
   if (saved) return saved;
+  // 纯静态托管（无自带联机后端）→ 默认连 Cloudflare 后端
+  if (location.host.endsWith('github.io')) return CF_BACKEND;
   if (location.protocol.startsWith('http')) {
     return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
   }

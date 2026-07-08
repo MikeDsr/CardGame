@@ -25,10 +25,12 @@ const CSS = `
 .ddz-sidemove .pcard .pc-corner { font-size:10px; }
 .ddz-sidemove .pcard .pc-suit-big { display:none; }
 .ddz-hand-wrap { padding:4px 8px 12px; }
-.ddz-hand { display:flex; justify-content:center; min-height:96px; align-items:flex-end;
-  overflow-x:auto; padding-top:20px; }
+.ddz-hand { display:flex; min-height:96px; align-items:flex-end;
+  overflow-x:auto; padding:20px 12px 4px; }
 .ddz-hand .pcard { margin-right:-30px; }
-.ddz-hand .pcard:last-child { margin-right:0; }
+/* auto-margin：牌少时居中，牌多时两端都能滚动到（justify-content:center 会裁掉两边） */
+.ddz-hand .pcard:first-child { margin-left:auto; }
+.ddz-hand .pcard:last-child { margin-right:auto; }
 .ddz-pass-bubble { background:#fff; color:#333; border-radius:14px; padding:4px 12px; font-size:13px; animation:pop .25s; }
 `;
 let cssDone = false;
