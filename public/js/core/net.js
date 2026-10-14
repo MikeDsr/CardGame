@@ -24,11 +24,35 @@ export class OnlineRoom {
     this.code = null;
     this.hostId = null;
     this.humans = [];       // [{id, name}]
-    this.onHumans = null;   // (list) => {}
-    this.onData = null;     // (fromId, data) => {}
-    this.onClosed = null;   // (msg) => {}
+    this._onHumans = null;  // (list) => {}
+    this._onData = null;    // (fromId, data) => {}
+    this._onClosed = null;  // (msg) => {}
+    this._hasHumans = false;
+    this._pendingData = [];
+    this._pendingClosed = null;
   }
   get isHost() { return this.myId === this.hostId; }
+  get onHumans() { return this._onHumans; }
+  set onHumans(fn) {
+    this._onHumans = fn;
+    if (fn && this._hasHumans) fn(this.humans);
+  }
+  get onData() { return this._onData; }
+  set onData(fn) {
+    this._onData = fn;
+    if (!fn) return;
+    const pending = this._pendingData.splice(0);
+    for (const item of pending) fn(item.from, item.data);
+  }
+  get onClosed() { return this._onClosed; }
+  set onClosed(fn) {
+    this._onClosed = fn;
+    if (fn && this._pendingClosed) {
+      const msg = this._pendingClosed;
+      this._pendingClosed = null;
+      fn(msg);
+    }
+  }
 
   // mode: {create:true, name} 或 {join:code, name}
   connect(opts) {
@@ -54,13 +78,17 @@ export class OnlineRoom {
           if (!settled) { settled = true; clearTimeout(timer); resolve(this); }
         } else if (m.t === 'humans') {
           this.humans = m.list; this.hostId = m.host;
-          this.onHumans && this.onHumans(m.list);
+          this._hasHumans = true;
+          if (this._onHumans) this._onHumans(m.list);
         } else if (m.t === 'data') {
-          this.onData && this.onData(m.from, m.data);
+          if (this._onData) this._onData(m.from, m.data);
+          else this._pendingData.push({ from: m.from, data: m.data });
         } else if (m.t === 'err') {
           if (!settled) { settled = true; clearTimeout(timer); ws.close(); reject(new Error(m.msg)); }
         } else if (m.t === 'closed') {
-          this.onClosed && this.onClosed(m.msg || '房间已解散');
+          const msg = m.msg || '房间已解散';
+          if (this._onClosed) this._onClosed(msg);
+          else this._pendingClosed = msg;
         }
       };
       ws.onerror = () => {
@@ -68,7 +96,11 @@ export class OnlineRoom {
       };
       ws.onclose = () => {
         if (!settled) { settled = true; clearTimeout(timer); reject(new Error('连接已断开')); }
-        else if (this.ws === ws) { this.onClosed && this.onClosed('与服务器断开连接'); }
+        else if (this.ws === ws) {
+          const msg = '与服务器断开连接';
+          if (this._onClosed) this._onClosed(msg);
+          else this._pendingClosed = msg;
+        }
       };
     });
   }

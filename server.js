@@ -95,17 +95,18 @@ wss.on('connection', (ws) => {
 });
 
 function dropClient(ws) {
-  const room = ws.roomCode ? rooms.get(ws.roomCode) : null;
+  const code = ws.roomCode;
+  const room = code ? rooms.get(code) : null;
   if (!room) return;
   room.clients.delete(ws.pid);
   room.names.delete(ws.pid);
   ws.roomCode = null;
-  if (room.clients.size === 0) { rooms.delete(ws.roomCode); return; }
+  if (room.clients.size === 0) { rooms.delete(code); return; }
   if (ws.pid === room.host) {
     // 房主离开：房间解散
     for (const c of room.clients.values()) send(c, { t: 'closed', msg: '房主已离开，房间解散' });
     for (const c of room.clients.values()) { c.roomCode = null; }
-    rooms.delete(ws.roomCode);
+    rooms.delete(code);
   } else {
     broadcastHumans(room);
   }
